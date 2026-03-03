@@ -1,0 +1,38 @@
+# Flutter Login App — Cursor Rules
+
+## Project
+- Flutter 3.29.x / Dart 3.x mobile app
+- Professional login UI with blue/cyan gradient wave design
+- Repo: https://github.com/Prakhar2025/flutter-app
+
+## Design Rules (DO NOT BREAK)
+- Primary gradient: #005BEA → #00C6FB
+- Font: ALWAYS use GoogleFonts.poppins() — never plain TextStyle()
+- Card: borderRadius 28, white background, soft blue shadow
+- Input fields: borderRadius 14, grey fill (#F9F9F9), cyan focus border
+- Buttons: full-width, gradient, borderRadius 14, cyan glow shadow
+- Wave header: CustomClipper<Path> (_WaveClipper) — keep as is
+
+## Code Conventions
+- All screens: StatefulWidget
+- Navigation: PageRouteBuilder + SlideTransition ONLY (no MaterialPageRoute)
+- Animations: FadeInDown for header text, FadeInUp for form card
+- All form fields must have validator: functions
+- Colors: Use hex Color(0xFF...) — never Colors.blue/red/green generic names
+
+## File Structure
+- lib/main.dart — entry point
+- lib/screens/login_screen.dart — Login UI (source of truth for design)
+- lib/screens/signup_screen.dart — Sign Up UI
+- New screens: copy wave header + card pattern from login_screen.dart
+
+## What's Done
+- Login + Sign Up screens with full validation
+- Smooth animations and page transitions
+- Google Fonts (Poppins)
+
+## Next Steps
+- Firebase Authentication
+- Home screen post-login
+- Dark mode
+- Splash screen
