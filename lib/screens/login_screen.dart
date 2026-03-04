@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
-import 'signup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _companyController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _companyController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -27,43 +29,49 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      // Simulate network call
       await Future.delayed(const Duration(seconds: 2));
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Signed in successfully!',
-                style: GoogleFonts.poppins()),
+            content: Text(
+              'Signed in successfully!',
+              style: GoogleFonts.poppins(),
+            ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     }
   }
 
+  // ─────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // ── Gradient wave header ──────────────────────────────
+          // Top gradient wave
           _buildWaveHeader(),
-
-          // ── Scrollable form body ──────────────────────────────
+          // Bottom gradient wave
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomWave(),
+          ),
           SafeArea(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Header text
                   _buildHeaderText(),
-
-                  // White card form
                   _buildFormCard(),
+                  const SizedBox(height: 140),
                 ],
               ),
             ),
@@ -73,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ─────────────────────── Wave Header ────────────────────────
+  // ─── Top Wave ────────────────────────────────────────────
 
   Widget _buildWaveHeader() {
     return ClipPath(
@@ -91,11 +99,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ─── Header Text ─────────────────────────────────────────
+
   Widget _buildHeaderText() {
     return FadeInDown(
       duration: const Duration(milliseconds: 600),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 60, 32, 0),
+        padding: const EdgeInsets.fromLTRB(32, 50, 32, 0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: Column(
@@ -117,7 +127,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 180),
+              const SizedBox(height: 6),
+              Text(
+                'Welcome back, please login to continue',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withOpacity(0.85),
+                ),
+              ),
+              const SizedBox(height: 150),
             ],
           ),
         ),
@@ -125,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ─────────────────────── Form Card ──────────────────────────
+  // ─── White Floating Card ──────────────────────────────────
 
   Widget _buildFormCard() {
     return FadeInUp(
@@ -154,28 +173,46 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Email field
+              _buildCompanyField(),
+              const SizedBox(height: 20),
               _buildEmailField(),
               const SizedBox(height: 20),
-
-              // Password field
               _buildPasswordField(),
-              const SizedBox(height: 8),
-
-              // Forgot password
-              _buildForgotPassword(),
-              const SizedBox(height: 28),
-
-              // Sign In button
-              _buildSignInButton(),
-              const SizedBox(height: 28),
-
-              // Sign Up link
-              _buildSignUpRow(),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: _buildSignInButton(),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    flex: 2,
+                    child: _buildForgotPassword(),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // ─── Fields ──────────────────────────────────────────────
+
+  Widget _buildCompanyField() {
+    return TextFormField(
+      controller: _companyController,
+      style: GoogleFonts.poppins(fontSize: 14),
+      decoration: _inputDecoration(
+        hint: 'Company Name',
+        icon: Icons.business_outlined,
+      ),
+      validator: (v) {
+        if (v == null || v.isEmpty) return 'Please enter company name';
+        return null;
+      },
     );
   }
 
@@ -208,16 +245,19 @@ class _LoginScreenState extends State<LoginScreen> {
         icon: Icons.lock_outline_rounded,
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: Colors.grey,
             size: 20,
           ),
-          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          onPressed: () =>
+              setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
       validator: (v) {
         if (v == null || v.isEmpty) return 'Please enter your password';
-        if (v.length < 6) return 'Password must be at least 6 characters';
+        if (v.length < 6) return 'Minimum 6 characters';
         return null;
       },
     );
@@ -230,23 +270,21 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
+      hintStyle:
+          GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
       prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: Colors.grey.shade50,
-      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.grey.shade200),
-      ),
+      fillColor: Colors.grey.shade100,
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: Colors.grey.shade200),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF00C6FB), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF005BEA), width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -259,27 +297,46 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ─── Forgot Password Button ───────────────────────────────
+
   Widget _buildForgotPassword() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: () {},
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 400),
+            pageBuilder: (_, __, ___) => const ForgotPasswordScreen(),
+            transitionsBuilder: (_, animation, __, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+      child: Align(
+        alignment: Alignment.centerRight,
         child: Text(
-          'Forgot Password?',
+          'Forgot\nPassword?',
+          textAlign: TextAlign.right,
           style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: Colors.grey,
+            fontSize: 12,
+            color: Colors.grey.shade600,
             fontWeight: FontWeight.w500,
+            height: 1.4,
           ),
         ),
       ),
     );
   }
+
+  // ─── Sign In Button ───────────────────────────────────────
 
   Widget _buildSignInButton() {
     return GestureDetector(
@@ -316,7 +373,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
-                    letterSpacing: 0.5,
                   ),
                 ),
         ),
@@ -324,69 +380,37 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildSignUpRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          "Don't have an account?  ",
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: Colors.grey.shade600,
+  // ─── Bottom Wave ─────────────────────────────────────────
+
+  Widget _buildBottomWave() {
+    return ClipPath(
+      clipper: _BottomWaveClipper(),
+      child: Container(
+        height: 150,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomRight,
+            end: Alignment.topLeft,
+            colors: [Color(0xFF005BEA), Color(0xFF00C6FB)],
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                transitionDuration: const Duration(milliseconds: 400),
-                pageBuilder: (_, __, ___) => const SignUpScreen(),
-                transitionsBuilder: (_, animation, __, child) {
-                  return SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(1, 0),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                        parent: animation, curve: Curves.easeOut)),
-                    child: child,
-                  );
-                },
-              ),
-            );
-          },
-          child: Text(
-            'Sign Up',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF005BEA),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
 
-// ─────────────────────── Wave Clipper ───────────────────────
+// ─── Top Wave Clipper ──────────────────────────────────────
 
 class _WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-    path.lineTo(0, size.height - 60);
+    path.lineTo(0, size.height);
     path.quadraticBezierTo(
-      size.width * 0.25,
-      size.height,
       size.width * 0.5,
       size.height - 40,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.75,
-      size.height - 80,
       size.width,
-      size.height - 30,
+      size.height - 120,
     );
     path.lineTo(size.width, 0);
     path.close();
@@ -395,4 +419,27 @@ class _WaveClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+// ─── Bottom Wave Clipper ───────────────────────────────────
+
+class _BottomWaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, size.height);
+    path.lineTo(0, 100);
+    path.quadraticBezierTo(
+      size.width * 0.5,
+      60,
+      size.width,
+      10,
+    );
+    path.lineTo(size.width, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
